@@ -1,11 +1,9 @@
 FROM ghcr.io/capsoftware/cap-web:latest
 USER root
 RUN set -eux; \
-  echo '--- pwd ---'; pwd; \
-  echo '--- root dirs ---'; ls -la / | sed -n '1,120p'; \
-  echo '--- app-ish dirs ---'; find / -maxdepth 3 \( -name '.next' -o -name 'server.js' -o -name 'proxy.js' -o -name 'middleware.js' -o -name 'app' \) 2>/dev/null | sed -n '1,200p'; \
-  echo '--- grep login/middleware/well-known candidates ---'; \
-  grep -Rsl --include='*.js' -e '/login' -e '/middleware' -e 'verify-otp' /app /usr/src/app /var/task /home 2>/dev/null | sed -n '1,200p'; \
-  echo '--- snippets ---'; \
-  for f in $(grep -Rsl --include='*.js' -e 'verify-otp' -e '/middleware' /app /usr/src/app /var/task /home 2>/dev/null | head -20); do echo ===$f===; grep -n -E 'verify-otp|middleware|onboarding|self-hosting|download|terms|signup|invite' $f | head -20 || true; done; \
+  echo '--- workdir/user/cmd-ish ---'; pwd; id; \
+  echo '--- /app tree ---'; find /app -maxdepth 5 -printf '%M %s %p\n' 2>/dev/null | sed -n '1,400p'; \
+  echo '--- all js-ish files count/sample ---'; find / -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name 'server' \) 2>/dev/null | sed -n '1,400p'; \
+  echo '--- all files containing cap-web-ish names ---'; find / -maxdepth 5 -type f 2>/dev/null | grep -Ei 'next|server|proxy|middleware|package|start|entry|index' | sed -n '1,400p'; \
+  echo '--- env PATH ---'; env | sort | sed -n '1,120p'; \
   exit 1
