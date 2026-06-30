@@ -1,9 +1,11 @@
 FROM ghcr.io/capsoftware/cap-web:latest
 USER root
 RUN set -eux; \
-  echo '--- workdir/user/cmd-ish ---'; pwd; id; \
-  echo '--- /app tree ---'; find /app -maxdepth 5 -printf '%M %s %p\n' 2>/dev/null | sed -n '1,400p'; \
-  echo '--- all js-ish files count/sample ---'; find / -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name 'server' \) 2>/dev/null | sed -n '1,400p'; \
-  echo '--- all files containing cap-web-ish names ---'; find / -maxdepth 5 -type f 2>/dev/null | grep -Ei 'next|server|proxy|middleware|package|start|entry|index' | sed -n '1,400p'; \
-  echo '--- env PATH ---'; env | sort | sed -n '1,120p'; \
+  echo '--- pwd/user ---'; pwd; id; \
+  echo '--- /app ls recursive ---'; ls -laR /app 2>/dev/null | sed -n '1,500p'; \
+  echo '--- top dirs ---'; for d in /app /home /usr/src /var/task /opt; do echo ===$d===; find $d -maxdepth 4 -type f 2>/dev/null | sed -n '1,200p'; done; \
+  echo '--- grep candidate strings anywhere except npm ---'; \
+  find /app /home /usr/src /var/task /opt -type f 2>/dev/null | while read f; do case "$f" in *node_modules/npm*) continue;; esac; grep -Iq . "$f" && grep -qE '/login|verify-otp|/self-hosting|/dashboard/caps|well-known|workflow/v1' "$f" && echo "$f"; done | sed -n '1,300p'; \
+  echo '--- snippets ---'; \
+  for f in $(find /app /home /usr/src /var/task /opt -type f 2>/dev/null | head -10000); do grep -Iq . "$f" && grep -qE '/dashboard/caps|verify-otp|workflow/v1|/self-hosting' "$f" && { echo ===$f===; grep -nE '/dashboard/caps|verify-otp|workflow/v1|/self-hosting|/login|startsWith' "$f" | head -40; }; done; \
   exit 1
